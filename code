@@ -1,0 +1,82 @@
+package chucknorris
+
+fun main() {
+    var instruction = ""
+    while (true) {
+        println("Please input operation (encode/decode/exit):")
+        instruction = readln()
+        when (instruction) {
+            "encode" -> encode()
+            "decode" -> decode()
+            "exit" -> {
+                println("Bye!")
+                break
+            }
+            else ->
+                println("There is no \'$instruction\' operation\n")
+        }
+    }
+}
+/* When you use while (true) to create an infinite loop in Kotlin, 
+the loop will continue running indefinitely until it is explicitly exited using some kind of control flow statement like break or return.
+If you use return inside a while (true) loop without specifying a value, 
+the function will return Unit (which is similar to void in other languages) 
+and the program will terminate. Here's an example:
+*/
+
+fun decode() {
+    println("Input encoded string:")
+    var providedString = readln()
+    if(providedString.contains(Regex("[^0\\s]"))) {
+        println("Encoded string is not valid.")
+        return // return unit type because the function returns nothing.
+    }
+    var inputChunks = providedString.trim().split(" ")
+    if(inputChunks.size % 2 != 0) {
+        println("Encoded string is not valid.")
+        return
+    }
+    var inputChunksof2 = providedString.trim().split(" ").chunked(2)
+    // .split(" ") generates 1 list, of substrings separated each by 1 space; .chunked(n) is applied to list, to generate sublists, each containing n elements.
+    var binaryExp = ""
+    for(comb in inputChunksof2) {
+        if(comb[0] != "0" && comb[0] != "00") {
+            println("Encoded string is not valid.")
+            return
+        } else if(comb[0] == "0") {
+            binaryExp += "1".repeat(comb[1].length)
+        } else {
+            binaryExp += "0".repeat(comb[1].length)
+        }
+    }
+    if(binaryExp.length % 7 != 0) {
+        println("Encoded string is not valid.")
+        return
+    }
+    val binaryPerChar = binaryExp.chunked(7)
+    println("Decoded string:")
+    for(char in binaryPerChar) {
+        print(char.toInt(2).toChar())
+    }
+    println()
+}
+
+fun encode() {
+    println("Input string:")
+    val inputCharArray = readln().toCharArray()
+    println("Encoded string:")
+    var binaryExp = ""
+    for(ch in inputCharArray) {
+        binaryExp += String.format("%7s", Integer.toBinaryString(ch.code)).replace(' ', '0')
+    }
+    val regexChunkLookUp = Regex("(.)\\1*")       // (.)anything that \\1* repeat 0 or more times.
+    val chunkList = regexChunkLookUp.findAll(binaryExp).map { it.value }.toList()  // creates a list of chunks of same values
+    for(item in chunkList) {
+        if(item.contains('1')) {
+            print("0 ${"0".repeat(item.length)} ")
+        } else if(!item.contains('1')) {
+            print("00 ${"0".repeat(item.length)} ")
+        }
+    }
+    println()
+}
